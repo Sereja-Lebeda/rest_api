@@ -10,7 +10,7 @@ import (
 
 var DB *sql.DB
 
-// функция подключения к базе данных
+// Функция подключения к базе данных
 func Connect() error {
 	connStr := "postgres://postgres:123@localhost:5432/tasksdb?sslmode=disable"
 	db, err := sql.Open("postgres", connStr)
@@ -19,7 +19,7 @@ func Connect() error {
 	}
 
 	if err := db.Ping(); err != nil {
-		return fmt.Errorf("не удалось подключиться к базе данных *database page* : %v", err)
+		return fmt.Errorf("не удалось подключиться к базе данных: %v", err)
 	}
 
 	DB = db

@@ -9,9 +9,9 @@ import (
 func RegisterProductRoutes(app *fiber.App) {
 	api := app.Group("/api")
 
-	api.Get("/products", handlers.GetProducts)
-	api.Post("/products", handlers.CreateProduct)
-	api.Get("/products/:id", handlers.GetProduct)
-	api.Put("/products/:id", handlers.UpdateProduct)
-	api.Delete("/products/:id", handlers.DeleteProduct)
+	api.Get("/tasks", handlers.GetTasks)
+	api.Post("/tasks", handlers.CreateTask)
+	api.Get("/tasks/:id", handlers.GetTask)
+	api.Put("/tasks/:id", handlers.UpdateTask)
+	api.Delete("/tasks/:id", handlers.DeleteTask)
 }

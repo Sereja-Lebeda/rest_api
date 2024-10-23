@@ -8,102 +8,118 @@ import (
 )
 
 // getting all tasks
-func GetProducts(c *fiber.Ctx) error {
-	rows, err := database.DB.Query("SELECT * FROM products") //id, title, description, status, created_at FROM products")
+func GetTasks(c *fiber.Ctx) error {
+	rows, err := database.DB.Query("SELECT * FROM tasks")
 	if err != nil {
 		return c.Status(500).SendString("Ошибка выполнения запроса к базе данных" + err.Error())
 	}
 	defer rows.Close()
 
-	var products []models.Product
+	var tasks []models.Task
 	for rows.Next() {
-		var product models.Product
-		err := rows.Scan(&product.ID, &product.Title, &product.Description, &product.Status, &product.Created_at)
+		var task models.Task
+		err := rows.Scan(&task.ID, &task.Title, &task.Description, &task.Status, &task.Created_at)
 		if err != nil {
 			return c.Status(500).SendString("Ошибка сканирования данных")
 		}
-		products = append(products, product)
+		tasks = append(tasks, task)
 	}
 
-	return c.JSON(products)
+	return c.JSON(tasks)
 }
 
 // creating new task
-func CreateProduct(c *fiber.Ctx) error {
-	product := new(models.Product)
-	if err := c.BodyParser(product); err != nil {
+func CreateTask(c *fiber.Ctx) error {
+	task := new(models.Task)
+	if err := c.BodyParser(task); err != nil {
 		return c.Status(400).SendString("Неверный формат запроса")
 	}
 
-	if product.Title == "" {
+	if task.Title == "" {
 		return c.Status(400).SendString("Поле Title не должно быть пустым")
 	}
 
-	if product.Status == "" {
+	if task.Status == "" {
 		return c.Status(400).SendString("Поле Status не должно быть пустым")
 	}
 
-	_, err := database.DB.Exec("INSERT INTO products (title, description, status) VALUES ($1, $2, $3)", //, $4)",
-		product.Title, product.Description, product.Status) //, product.Created_at)
+	_, err := database.DB.Exec("INSERT INTO tasks (title, description, status) VALUES ($1, $2, $3)",
+		task.Title, task.Description, task.Status)
 
 	if err != nil {
 		// Логируем ошибку для получения детальной информации
-		return c.Status(500).SendString("Ошибка вставки данных в базу данных: " + err.Error())
-
-		//	return c.Status(500).SendString("Ошибка вставки данных в базу данных")
+		return c.Status(500).SendString("Ошибка вставки данных в базу данных: ")
 	}
 
-	return c.Status(201).SendString("Продукт успешно создан")
+	return c.Status(201).SendString("Задача успешно создана")
 }
 
 // getting task by ID
-func GetProduct(c *fiber.Ctx) error {
+func GetTask(c *fiber.Ctx) error {
 	id := c.Params("id")
-	row := database.DB.QueryRow("SELECT id, title, description, status, created_at FROM products WHERE id = $1", id)
+	row := database.DB.QueryRow("SELECT id, title, description, status, created_at FROM tasks WHERE id = $1", id)
 
-	var product models.Product
-	err := row.Scan(&product.ID, &product.Title, &product.Description, &product.Status, &product.Created_at)
+	var task models.Task
+	err := row.Scan(&task.ID, &task.Title, &task.Description, &task.Status, &task.Created_at)
 	if err != nil {
-		return c.Status(404).SendString("Продукт не найден")
+		return c.Status(404).SendString("Задача с таким ID не найдена")
 	}
 
-	return c.JSON(product)
+	return c.JSON(task)
 }
 
 // updating task
-func UpdateProduct(c *fiber.Ctx) error {
+func UpdateTask(c *fiber.Ctx) error {
 	id := c.Params("id")
-	product := new(models.Product)
+	task := new(models.Task)
 
-	if err := c.BodyParser(product); err != nil {
+	if err := c.BodyParser(task); err != nil {
 		return c.Status(400).SendString("Неверный формат запроса")
 	}
 
-	if product.Title == "" {
+	if task.Title == "" {
 		return c.Status(400).SendString("Поле Title не должно быть пустым")
 	}
 
-	if product.Status == "" {
+	if task.Status == "" {
 		return c.Status(400).SendString("Поле Status не должно быть пустым")
 	}
 
-	_, err := database.DB.Exec("UPDATE products SET title = $1, description = $2, status = $3 WHERE id = $4",
-		product.Title, product.Description, product.Status, id)
-
+	result, err := database.DB.Exec("UPDATE tasks SET title = $1, description = $2, status = $3 WHERE id = $4",
+		task.Title, task.Description, task.Status, id)
 	if err != nil {
 		return c.Status(500).SendString("Ошибка обновления данных")
 	}
 
-	return c.SendString("Продукт успешно обновлен")
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return c.Status(500).SendString("Ошибка получения данных о затронутых строках")
+	}
+
+	if rowsAffected == 0 {
+		return c.Status(404).SendString("Задача с таким ID не найдена")
+	}
+
+	return c.SendString("Задача успешно обновлена")
 }
 
 // deleting task
-func DeleteProduct(c *fiber.Ctx) error {
+func DeleteTask(c *fiber.Ctx) error {
 	id := c.Params("id")
-	_, err := database.DB.Exec("DELETE FROM products WHERE id = $1", id)
+
+	result, err := database.DB.Exec("DELETE FROM tasks WHERE id = $1", id)
 	if err != nil {
-		return c.Status(500).SendString("Ошибка удаления продукта")
+		return c.Status(500).SendString("Ошибка удаления задачи")
 	}
 
-	return c.SendString("Продукт успешно удален")
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return c.Status(500).SendString("Ошибка получения данных о затронутых строках")
+	}
+
+	if rowsAffected == 0 {
+		return c.Status(404).SendString("Задача с таким ID не найдена")
+	}
+
+	return c.SendString("Задача успешно удалена")
 }
