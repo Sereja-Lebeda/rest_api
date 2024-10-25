@@ -47,7 +47,6 @@ func CreateTask(c *fiber.Ctx) error {
 		task.Title, task.Description, task.Status)
 
 	if err != nil {
-		// Логируем ошибку для получения детальной информации
 		return c.Status(500).SendString("Ошибка вставки данных в базу данных: ")
 	}
 
