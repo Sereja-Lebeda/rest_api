@@ -11,7 +11,7 @@ import (
 func GetTasks(c *fiber.Ctx) error {
 	rows, err := database.DB.Query("SELECT * FROM tasks")
 	if err != nil {
-		return c.Status(500).SendString("Ошибка выполнения запроса к базе данных" + err.Error())
+		return c.Status(500).SendString("Ошибка выполнения запроса к базе данных")
 	}
 	defer rows.Close()
 
