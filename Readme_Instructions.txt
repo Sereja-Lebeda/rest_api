@@ -14,6 +14,8 @@ Endpoints:
 
   - Удаление определенной задачи.
 
+  - Получение списка задач по их статусу.
+
 
 
 Примеры использования: 
@@ -42,3 +44,7 @@ Endpoints:
 
   - Удаление задачи (DEL):
     - http://localhost:8080/api/tasks/12, где "12" id задачи. 
+
+  - Поиск задач по их статусу (GET):
+    - http://localhost:8080/api/status/status_example, где status_example заменяется на одно из значений: "Pending", "In progress", "Completed" (без ковычек)
+    
