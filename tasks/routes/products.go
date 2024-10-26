@@ -14,4 +14,5 @@ func RegisterProductRoutes(app *fiber.App) {
 	api.Get("/tasks/:id", handlers.GetTask)
 	api.Put("/tasks/:id", handlers.UpdateTask)
 	api.Delete("/tasks/:id", handlers.DeleteTask)
+	api.Get("/tasks/status/:status", handlers.FindStatusTask)
 }

@@ -43,6 +43,10 @@ func CreateTask(c *fiber.Ctx) error {
 		return c.Status(400).SendString("Поле Status не должно быть пустым")
 	}
 
+	if task.Status != "Pending" && task.Status != "In progress" && task.Status != "Completed" {
+		return c.Status(400).SendString("Поле Status должно иметь одно следующих значений: 'Pending', 'In progress' или 'Completed'")
+	}
+
 	_, err := database.DB.Exec("INSERT INTO tasks (title, description, status) VALUES ($1, $2, $3)",
 		task.Title, task.Description, task.Status)
 
@@ -84,6 +88,10 @@ func UpdateTask(c *fiber.Ctx) error {
 		return c.Status(400).SendString("Поле Status не должно быть пустым")
 	}
 
+	if task.Status != "Pending" && task.Status != "In progress" && task.Status != "Completed" {
+		return c.Status(400).SendString("Поле Status должно иметь одно следующих значений: 'Pending', 'In progress' или 'Completed'")
+	}
+
 	result, err := database.DB.Exec("UPDATE tasks SET title = $1, description = $2, status = $3 WHERE id = $4",
 		task.Title, task.Description, task.Status, id)
 	if err != nil {
@@ -121,4 +129,31 @@ func DeleteTask(c *fiber.Ctx) error {
 	}
 
 	return c.SendString("Задача успешно удалена")
+}
+
+// finding task by status
+func FindStatusTask(c *fiber.Ctx) error {
+	status := c.Params("status")
+	rows, err := database.DB.Query("SELECT * FROM tasks WHERE status = $1", status)
+	if err != nil {
+		return c.Status(500).SendString("Ошибка сканирования данных")
+	}
+	defer rows.Close()
+
+	var tasks []models.Task
+
+	for rows.Next() {
+		var task models.Task
+		err := rows.Scan(&task.ID, &task.Title, &task.Description, &task.Status, &task.Created_at)
+		if err != nil {
+			return c.Status(500).SendString("Ошибка сканирования данных при извлечении и их обработке")
+		}
+		tasks = append(tasks, task)
+	}
+
+	if len(tasks) == 0 {
+		return c.Status(404).SendString("Задачи с Status не найдены")
+	}
+
+	return c.JSON(tasks)
 }
